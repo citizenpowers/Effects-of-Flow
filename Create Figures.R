@@ -14,18 +14,17 @@ library(e1071)
 
 
 #S5A
-ggplot(filter(S5A_WQ_and_flow,Flow>1),aes(Flow,`PHOSPHATE, TOTAL AS P`*1000))+geom_point()+theme_bw()+
+ggplot(filter(S5A_WQ_and_flow,Flow>1),aes(Flow,`PHOSPHATE, TOTAL AS P`*1000))+geom_point()+theme_bw()+geom_smooth(method="lm")+
 stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~"),color="red"),parse = TRUE)+
 labs(y= expression(TP~mu~g~L^-1),x="Flow (cfs)", title = "Total Phosphorus vs Flow at S5A from Grab Samples from Jan 2015 to May 2021",caption="Flows less than 1 cfs excluded")
 
 ggsave("Total Phosphorus vs Flow at S5A from Grab Samples from Jan 2015 to May 2021.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 6, units = "in", dpi = 300, limitsize = TRUE)
 
-
-
 ggplot(filter(G538_WQ_and_flow,Flow>1),aes(Flow,`PHOSPHATE, TOTAL AS P`*1000))+geom_point()+theme_bw()+geom_smooth(method="lm")+
 stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~"),color="red"),parse = TRUE)+
 labs(y= expression(TP~mu~g~L^-1),x="Flow (cfs)", title = "Total Phosphorus vs Flow at G538 from Grab Samples from Jan 2015 to May 2021",caption="Flows less than 1 cfs excluded")
 
+ggsave("Total Phosphorus vs Flow at G538 from Grab Samples from Jan 2015 to May 2021.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 6, units = "in", dpi = 300, limitsize = TRUE)
 
 ggplot(S5A_WQ_and_flow,aes(Flow,`PHOSPHATE, ORTHO AS P`))+geom_point()
 
