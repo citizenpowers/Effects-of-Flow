@@ -67,23 +67,24 @@ fill(Flow)
 
 # Step 2: Import and Tidy WQ data  --------------------------------------
 
-#S5A data 
+#S5A grab data 
 S5A_WQ_Data <- read_csv("Data/S5A WQ Data.csv") %>%
 select(Collection_Date,`Test Name`,Value) %>%
 filter(!is.na(`Test Name`))%>%
 pivot_wider(names_from=`Test Name`,values_from=Value) %>%
 mutate(Date=mdy_hm(`Collection_Date`))
 
+
 #S319 data  
 S319_WQ_Data <- read_csv("Data/S319 WQ Data.csv") %>%
 select(Collection_Date,`Test Name`,Value) %>%
+  
 filter(!is.na(`Test Name`))%>%
 pivot_wider(names_from=`Test Name`,values_from=Value) %>%
 mutate(Date=mdy_hm(`Collection_Date`))
 
 #G300 structures data  
 G302_G301_and_G300_WQ_Data <- read_csv("Data/G302, G301, and G300 WQ Data.csv") %>%
-c
 select(Collection_Date,`Test Name`,Value,`Station ID`) %>%
 filter(!is.na(`Test Name`)) %>%
 pivot_wider(names_from=`Test Name`,values_from=Value) %>%
@@ -112,4 +113,8 @@ left_join(G300s ,by=c("Date","Station"))
 
 G538_WQ_and_flow <-G538_WQ_Data %>%
 left_join(G538_Flow_by_minute,by="Date")
+
+
+
+
 
