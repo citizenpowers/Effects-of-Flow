@@ -49,3 +49,14 @@ stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = 
 labs(y= expression(TP~mu~g~L^-1),x="Flow (cfs)", title = "Particulate Phosphorus vs Flow at G302 from Grab Samples from Jan 2015 to May 2021",caption="Flows less than 1 cfs excluded")
 
 ggsave("Particulate Phosphorus vs Flow at G302 from Grab Samples from Jan 2015 to May 2021.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 6, units = "in", dpi = 300, limitsize = TRUE)
+
+#Seasonal plots
+ggplot(S5A_WQ_and_flow,aes(Date,`PHOSPHATE, TOTAL AS P`))+geom_point()+theme_bw()+geom_smooth(method="loess",span=.2)+
+scale_x_datetime(date_breaks = "3 months",date_labels = "%b%y")
+
+ggplot(mutate(S5A_WQ_and_flow,`Flow Category`=ifelse(Flow>0,"Flow","No Flow")),aes(month(Date,label = TRUE),`PHOSPHATE, TOTAL AS P`))+
+geom_jitter(color="light blue")+geom_boxplot(alpha=.5)+theme_bw()+facet_wrap(~`Flow Category`)
+
+mutate(S5A_WQ_and_flow,`Flow Category`=ifelse(Flow>0,"Flow","No Flow"))
+
+
