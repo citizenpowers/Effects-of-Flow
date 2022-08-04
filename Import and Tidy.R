@@ -20,7 +20,7 @@ bind_rows(read_csv("Data/S5A Flow 2017-21.csv")) %>%
 mutate(Date=mdy_hm(`Date Time`))
        
 #Combined 
-S5A_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2021,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+S5A_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(S5A_Flow,by="Date") %>%
 fill(Flow)  
 
@@ -29,24 +29,24 @@ S319_Flow <-   read_csv("Data/S319 Flow 2015-21.csv") %>%
 mutate(Date=mdy_hm(`Date Time`))
 
 #Combined O
-S319_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2021,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+S319_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(S319_Flow,by="Date") %>%
 fill(Flow)  
 
 #G300 Flow
-G300_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2021,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+G300_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(mutate(read_csv("Data/G300 Flow 2015-21.csv"),Date=mdy_hm(`Date`)) ,by="Date") %>%
 mutate(Station="G300") %>%  
 fill(Flow)  
 
 #G301 Flow
-G301_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2021,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+G301_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(mutate(read_csv("Data/G301 Flow 2015-21.csv"),Date=mdy_hm(`Date`)) ,by="Date") %>%
 mutate(Station="G301") %>%    
 fill(Flow)  
 
 #G302 Flow
-G302_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2021,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+G302_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(mutate(read_csv("Data/G302 Flow 2015-21.csv"),Date=mdy_hm(`Date`)) ,by="Date") %>%
 mutate(Station="G302") %>%  
 fill(Flow)  
