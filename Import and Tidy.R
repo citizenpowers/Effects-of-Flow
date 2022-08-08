@@ -10,13 +10,14 @@ library(ggplot2)
 library(lubridate)
 library(tidyr)
 library(maptools)
-
+library(dbhydroR)
 
 
 # Step 1: Import and Tidy Flow  Data from CSV --------
 
 S5A_Flow <-  read_csv("Data/S5A Flow 2015-16.csv") %>%
 bind_rows(read_csv("Data/S5A Flow 2017-21.csv")) %>%
+bind_rows(read_csv("Data/S5A Flow 2021-22.csv")) %>%
 mutate(Date=mdy_hm(`Date Time`))
        
 #Combined 
@@ -28,7 +29,7 @@ fill(Flow)
 S319_Flow <-   read_csv("Data/S319 Flow 2015-21.csv") %>%
 mutate(Date=mdy_hm(`Date Time`))
 
-#Combined O
+#Combined 
 S319_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,06,01,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(S319_Flow,by="Date") %>%
 fill(Flow)  
@@ -56,7 +57,7 @@ G300s <- bind_rows(G300_Flow_by_minute,G301_Flow_by_minute) %>%
 bind_rows(G302_Flow_by_minute)   
 
 #G538 Flow
-G538_Flow <-  read_csv("Data/G538 Flow Data.csv") %>%
+G538_Flow <-  read_csv("Data/G538 Flow 2016-22.csv") %>%
 mutate(Date=mdy_hm(`Date Time`))
 
 #G538 Combined 
@@ -68,10 +69,11 @@ fill(Flow)
 # Step 2: Import and Tidy WQ data  --------------------------------------
 
 #S5A grab data 
-S5A_WQ_Data <- read_csv("Data/S5A WQ Data.csv") %>%
+S5A_WQ_Data <- read_csv("Data/S5A WQ 2015-22.csv") %>%
+filter(Matrix=="SW",`Sample Type New`=="SAMP" ) %>%  
 select(Collection_Date,`Test Name`,Value) %>%
-filter(!is.na(`Test Name`))%>%
-pivot_wider(names_from=`Test Name`,values_from=Value) %>%
+filter(!is.na(`Test Name`)) %>%
+pivot_wider(names_from=`Test Name`,values_from=Value,values_fn ="mean" ) %>%
 mutate(Date=mdy_hm(`Collection_Date`))
 
 
@@ -92,7 +94,7 @@ mutate(Date=mdy_hm(`Collection_Date`),Station=`Station ID`,`Particulate Phosphor
 select(`PHOSPHATE, TOTAL AS P`,`PHOSPHATE, ORTHO AS P`,`PHOSPHATE, DISSOLVED AS P`,`Particulate Phosphorus`,`Date`,`Station`)
 
 #G538 data 
-G538_WQ_Data <- read_csv("Data/G538 WQ Data.csv") %>%
+G538_WQ_Data <- read_csv("Data/G538 WQ 2015-22.csv") %>%
 filter(`Sample Type New`=="SAMP",is.na(Flag)) %>%   
 select(Collection_Date,`Test Name`,Value) %>%
 filter(!is.na(`Test Name`))%>%
@@ -113,6 +115,9 @@ left_join(G300s ,by=c("Date","Station"))
 
 G538_WQ_and_flow <-G538_WQ_Data %>%
 left_join(G538_Flow_by_minute,by="Date")
+
+
+
 
 
 
