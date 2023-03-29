@@ -87,12 +87,6 @@ Summary_stats_WQ <- rbind(G538_WQ_summary_stats_TP,S5A_WQ_summary_stats_TP) %>% 
 
 # Time Series Plots -------------------------------------------------------
 
-#Create combined DF of S5A and G538
-WQ_Time_Series <- mutate(select(S5A_WQ_and_flow,Date,Flow,`PHOSPHATE, TOTAL AS P`,`TOTAL NITROGEN`),Station="S5A") %>%
-  rbind(mutate(select(G538_WQ_and_flow,Date,Flow,`PHOSPHATE, TOTAL AS P`,`TOTAL NITROGEN`),Station="G538") ) %>%
-  mutate(Year=year(Date),Month=month(Date,label = TRUE,abbr = TRUE),yday=yday(Date),mday=mday(Date)) %>%
-  mutate(datetime =make_datetime(2020, Month, mday, 12,0, 0))  %>%
-  pivot_longer(names_to="Parameter",values_to="Value",3:4)
 
 #Seasonal WQ at G538 and S5A
 ggplot(WQ_Time_Series,aes(datetime,Value,color=as.factor(Station)))+geom_point()+theme_bw()+geom_smooth(fill="grey")+facet_wrap(~Parameter,ncol=1,scales="free_y")+
@@ -128,10 +122,13 @@ ggsave("G538 Seasonal flow Pattern.jpg", plot = last_plot(), path ="./Figures/",
 # Scatter Plots ----------------------------------------------------------
 
 #S5A TPO4
-ggplot(filter(WQ_Time_Series,Flow>1),aes(Flow,Value,color=Station))+geom_point()+theme_bw()+geom_smooth(method="lm",fill="grey")+facet_wrap(~Parameter,ncol=1,scales="free")+
+ggplot(filter(WQ_Time_Series,Flow>1,Parameter %in% c("PHOSPHATE, TOTAL AS P","PHOSPHATE, ORTHO AS P")),aes(Flow,Value*1000,color=Station))+geom_point()+theme_bw()+geom_smooth(method="lm",fill="grey")+facet_wrap(~Parameter,ncol=1,scales="free")+
 stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE)+
-geom_line(data=augment(S5A_model_growth,filter(drop_na(S5A_WQ_and_flow,`PHOSPHATE, TOTAL AS P`),Flow>1)),aes(Flow,.fitted))+
-labs(y= expression(mg~L^-1),x="Flow (cfs)", title = "Water Quality Analytes vs Flow at G538 and S5A",caption="Flows less than 1 cfs excluded")
+#geom_line(data=augment(S5A_model_growth,filter(drop_na(S5A_WQ_and_flow,`PHOSPHATE, TOTAL AS P`),Flow>1)),aes(Flow,.fitted))+
+labs(y= expression(mu~g~L^-1),x="Flow (cfs)", title = "TP and OPO4 vs Flow at G538, S5A, S5A South",caption="Flows less than 1 cfs excluded")
+
+ggsave("TP and OPO4 vs Flow at G538, S5A, S5A South.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 8, units = "in", dpi = 300, limitsize = TRUE)
+
 
 #S5A TPO4
 p1 <-ggplot(filter(WQ_Time_Series,Flow>1,Parameter=="PHOSPHATE, TOTAL AS P"),aes(Flow,Value,color=Station))+geom_point()+theme_bw()+geom_smooth(method="lm",fill="grey")+

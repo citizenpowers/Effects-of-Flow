@@ -28,12 +28,24 @@ fill(Flow)
 
 #Import G538 Flow data
 G538_Flow <-  read_csv("Data/G538 Flow 2016-22.csv") %>%
-mutate(Date=mdy_hm(`Date Time`))
+mutate(Date=mdy_hm(`Date Time`)) %>%
+distinct(Date,.keep_all=TRUE)
 
 #Combine G538 data with DF with every minute included
 G538_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2016,6,01,0,0,0,tz = "UTC"), to=ISOdate(2022,08,08,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
 left_join(G538_Flow,by="Date") %>%
 fill(Flow)  
+
+#Import S5A S Flow data
+S5AS_Flow <-  read_csv("Data/S5AS flow Data.csv") %>%
+mutate(Date=mdy_hm(`Date Time`)) %>%
+distinct(Date,.keep_all=TRUE)
+
+#Combine S5AS data with DF with every minute included
+S5AS_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2022,08,08,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+left_join(S5AS_Flow,by="Date") %>%
+fill(Flow)  %>%
+mutate(Flow=Flow*-1) #Typical flow direction is to the north out of the Conservation Area but is computed as negative because headwater is considered to be on the L-8 side of the structure.
 
 
 # Step 2: Import and Tidy WQ data  --------------------------------------
@@ -54,6 +66,14 @@ filter(!is.na(`Test Name`))%>%
 pivot_wider(names_from=`Test Name`,values_from=Value) %>%
 mutate(Date=dmy_hm(`Collection_Date`))
 
+#S5A S data 
+S5AS_WQ_Data <- read_csv("Data/S5AS WQ Data.csv") %>%
+filter(`Sample Type New`=="SAMP",is.na(Flag)) %>%   
+select(Collection_Date,`Test Name`,Value) %>%
+filter(!is.na(`Test Name`))%>%
+pivot_wider(names_from=`Test Name`,values_from=Value) %>%
+mutate(Date=dmy_hm(`Collection_Date`))
+
 
 # Step 3: Join Flow and RPA data and save DF --------------------------------------
 
@@ -67,6 +87,21 @@ left_join(G538_Flow_by_minute,by="Date")
 
 write_csv(G538_WQ_and_flow ,"Data/G538_WQ_and_flow.csv")
 
+S5AS_WQ_and_flow <-S5AS_WQ_Data %>%
+left_join(S5AS_Flow_by_minute,by="Date")
+
+write_csv(S5A_WQ_and_flow,"Data/S5AS_WQ_and_flow.csv")
+
+
+#Create combined DF of S5A and G538
+WQ_Time_Series <- mutate(select(S5A_WQ_and_flow,Date,Flow,`PHOSPHATE, TOTAL AS P`,`TOTAL NITROGEN`,`PHOSPHATE, ORTHO AS P`),Station="S5A") %>%
+rbind(mutate(select(G538_WQ_and_flow,Date,Flow,`PHOSPHATE, TOTAL AS P`,`TOTAL NITROGEN`),Station="G538",`PHOSPHATE, ORTHO AS P`=NA)) %>%  #Ortho P not collected for G538
+rbind(mutate(select(S5AS_WQ_and_flow,Date,Flow,`PHOSPHATE, TOTAL AS P`,`TOTAL NITROGEN`,`PHOSPHATE, ORTHO AS P`),Station="S5AS") ) %>%  
+mutate(Year=year(Date),Month=month(Date,label = TRUE,abbr = TRUE),yday=yday(Date),mday=mday(Date)) %>%
+mutate(datetime =make_datetime(2020, Month, mday, 12,0, 0))  %>%
+pivot_longer(names_to="Parameter",values_to="Value",3:5)
+
+write_csv(WQ_Time_Series,"Data/WQ_Time_Series.csv")
 
 
 # Daily Average Flow ------------------------------------------------------
@@ -84,6 +119,7 @@ group_by(Day) %>%
 summarise(n(),`Daily Flow`=mean(Flow))
 
 write_csv(G538_Daily_Average_flow,"Data/G538_Daily_Average_flow.csv")
+
 
 # Test Code ---------------------------------------------------------------
 
