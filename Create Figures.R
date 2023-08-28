@@ -24,10 +24,25 @@ ggthemr("light",type="outer", layout="scientific")
 
 S5A_WQ_and_flow <- read_csv("Data/S5A_WQ_and_flow.csv")   #WQ and Flow
 G538_WQ_and_flow <- read_csv("Data/G538_WQ_and_flow.csv") #WQ and Flow
+S5AE_WQ_and_flow <- read_csv("Data/S5AE_WQ_and_flow.csv")   #WQ and Flow
 S5A_Daily_Average_flow <-read_csv("Data/S5A_Daily_Average_flow.csv")  #Daily mean flows
 G538_Daily_Average_flow <-read_csv("Data/G538_Daily_Average_flow.csv") #Daily mean flows
 
+
+
+# Tidy data ---------------------------------------------------------------
+
+S5A_WQ_and_flow_long <- S5A_WQ_and_flow  %>%
+pivot_longer(2:106,names_to = "Parameter",values_to = "Value") %>%
+select(-`Date Time`,-Station)  
+
+S5AE_WQ_and_flow_long <- S5AE_WQ_and_flow  %>%
+pivot_longer(2:3,names_to = "Parameter",values_to = "Value") %>%
+select(-`Date Time`,-STATION)  
+
+
 #Flow Summary Stats and Histograms --------------------------------------------------------------
+
 
 ggplot(filter(G538_Daily_Average_flow,`Daily Flow`!=0),aes(`Daily Flow`))+geom_histogram(binwidth=50)+theme_bw()+
 labs(y= "Count of Days",x="Flow (cfs)", title = "Histogram of daily mean flow June 2016 to Aug 2022 G538",caption="Days with no flow excluded")+scale_x_continuous(breaks=c(seq(0,3000,500))) 
@@ -235,32 +250,24 @@ tidy(S5A_model)
 tidy(S5A_model_growth)
 glance(S5A_model_growth)
 
-# Test Code ---------------------------------------------------------------
+
+# Turbidty vs flow ---------------------------------------------------------------
+
+#S5A Turbidity and TSS
+ggplot(filter(S5A_WQ_and_flow_long,Flow>-1000,Parameter %in% c("TURBIDITY","TOTAL SUSPENDED SOLIDS")),aes(Flow,Value))+geom_point()+theme_bw()+geom_smooth(method="lm",fill="grey")+facet_wrap(~Parameter)+
+stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE)+
+labs(y="Turbidty (NTU), TSS (mg/L)",x="Flow (cfs)", title = "Turbidirty vs Flow at  S5A")
+
+ggsave("TP and OPO4 vs Flow at G538, S5A, S5A South.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 8, units = "in", dpi = 300, limitsize = TRUE)
+
+
+#S5AE Turbidity and TSS
+ggplot(filter(S5AE_WQ_and_flow_long,Flow>-1000,Parameter %in% c("TURBIDITY","TOTAL SUSPENDED SOLIDS")),aes(Flow,Value))+geom_point()+theme_bw()+geom_smooth(method="lm",fill="grey")+facet_wrap(~Parameter)+
+stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE)+
+labs(y="Turbidty (NTU), TSS (mg/L)",x="Flow (cfs)", title = "Turbidirty vs Flow at  S5AE")
 
 
 
-ggplot(S5A_WQ_and_flow,aes(Flow,`PHOSPHATE, ORTHO AS P`))+geom_point()
 
-ggplot(S5A_WQ_and_flow,aes(Flow,`PHOSPHATE, DISSOLVED AS P`))+geom_point()
-
-ggplot(S5A_WQ_and_flow,aes(Flow,(`PHOSPHATE, TOTAL AS P`-`PHOSPHATE, DISSOLVED AS P`)))+geom_point()
-
-ggplot(S319_WQ_and_flow,aes(Flow,`PHOSPHATE, TOTAL AS P`))+geom_point()+theme_bw()
-
-ggplot(S319_WQ_and_flow,aes(Flow,`PHOSPHATE, ORTHO AS P`))+geom_point()
-
-ggplot(S319_WQ_and_flow,aes(Flow,`PHOSPHATE, DISSOLVED AS P`))+geom_point()
-
-ggplot(filter(G300_G301_G302_WQ_and_flow,Station=="G302",Flow>1),aes(Flow,`PHOSPHATE, TOTAL AS P`*1000))+geom_point()+theme_bw()+
-  stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~"),color="red"),parse = TRUE)+  
-  labs(y= expression(TP~mu~g~L^-1),x="Flow (cfs)", title = "Total Phosphorus vs Flow at G302 from Grab Samples from Jan 2015 to May 2021",caption="Flows less than 1 cfs excluded")
-
-ggsave("Total Phosphorus vs Flow at G302 from Grab Samples from Jan 2015 to May 2021.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 6, units = "in", dpi = 300, limitsize = TRUE)
-
-ggplot(filter(G300_G301_G302_WQ_and_flow,Station=="G302",Flow>1),aes(Flow,`Particulate Phosphorus`*1000))+geom_point()+theme_bw()+
-  stat_poly_eq(formula = y~x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~"),color="red"),parse = TRUE)+
-  labs(y= expression(TP~mu~g~L^-1),x="Flow (cfs)", title = "Particulate Phosphorus vs Flow at G302 from Grab Samples from Jan 2015 to May 2021",caption="Flows less than 1 cfs excluded")
-
-ggsave("Particulate Phosphorus vs Flow at G302 from Grab Samples from Jan 2015 to May 2021.jpg", plot = last_plot(), path ="./Figures/",width = 10.666, height = 6, units = "in", dpi = 300, limitsize = TRUE)
 
 

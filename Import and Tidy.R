@@ -47,6 +47,16 @@ left_join(S5AS_Flow,by="Date") %>%
 fill(Flow)  %>%
 mutate(Flow=Flow*-1) #Typical flow direction is to the north out of the Conservation Area but is computed as negative because headwater is considered to be on the L-8 side of the structure.
 
+#Import S5A E Flow data
+S5AE_Flow <- read_csv("Data/S5AE  Flow.csv") %>%
+mutate(Date=mdy_hm(`Date Time`)) %>%
+distinct(Date,.keep_all=TRUE)
+
+#Combine S5AS data with DF with every minute included
+S5AE_Flow_by_minute <-  setNames(as.data.frame(seq(from=ISOdate(2015,1,01,0,0,0,tz = "UTC"), to=ISOdate(2023,08,23,0,0,0,tz = "UTC"),by = "min")),"Date") %>%
+left_join(S5AE_Flow,by="Date") %>%
+fill(Flow)  
+
 
 # Step 2: Import and Tidy WQ data  --------------------------------------
 
@@ -74,6 +84,13 @@ filter(!is.na(`Test Name`))%>%
 pivot_wider(names_from=`Test Name`,values_from=Value) %>%
 mutate(Date=dmy_hm(`Collection_Date`))
 
+#S5A E data 
+S5AE_WQ_Data <- read_csv("Data/S5AE WQ Data.csv") %>%
+filter(`Sample Type New`=="SAMP",is.na(Flag)) %>%   
+select(Collection_Date,`Test Name`,Value) %>%
+filter(!is.na(`Test Name`))%>%
+pivot_wider(names_from=`Test Name`,values_from=Value) %>%
+mutate(Date=dmy_hm(`Collection_Date`))
 
 # Step 3: Join Flow and RPA data and save DF --------------------------------------
 
@@ -91,6 +108,11 @@ S5AS_WQ_and_flow <-S5AS_WQ_Data %>%
 left_join(S5AS_Flow_by_minute,by="Date")
 
 write_csv(S5A_WQ_and_flow,"Data/S5AS_WQ_and_flow.csv")
+
+S5AE_WQ_and_flow <-S5AE_WQ_Data %>%
+left_join(S5AE_Flow_by_minute,by="Date") %>% drop_na(Flow)
+
+write_csv(S5AE_WQ_and_flow,"Data/S5AE_WQ_and_flow.csv")
 
 
 #Create combined DF of S5A and G538
